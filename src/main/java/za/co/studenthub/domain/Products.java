@@ -1,13 +1,14 @@
 package za.co.studenthub.domain;
+
 import jakarta.persistence.*;
 import lombok.*;
 import za.co.studenthub.domain.enums.ReturnType;
 
 @Entity
 @Getter
-@Setter // Added @Setter for convenience in managing relationships
+@Setter
 @Builder
-@ToString(exclude = {"userProduct"}) // Exclude collections from toString to prevent infinite loops
+@ToString(exclude = {"userProduct"})
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "products")
@@ -25,5 +26,4 @@ public class Products {
 
     @Enumerated(EnumType.STRING)
     private ReturnType productReturnType;
-
 }

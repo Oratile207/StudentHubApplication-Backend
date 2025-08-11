@@ -1,13 +1,18 @@
 package za.co.studenthub.factory;
 
-import za.co.studenthub.domain.Admin;
 import za.co.studenthub.domain.Channel;
+import za.co.studenthub.domain.User;
 import za.co.studenthub.domain.enums.ChannelType;
 import za.co.studenthub.util.Helper;
 
 public class ChannelFactory {
-    public static Channel createChannel(String channelName, ChannelType channelType, Admin admin) {
-        if (Helper.isNullOrEmpty(channelName) || channelType == null || admin == null) {
+    public static Channel createChannel(String channelName,
+                                        ChannelType channelType,
+                                        User admin) {
+
+        if (Helper.isNullOrEmpty(channelName) ||
+                channelType == null ||
+                admin == null) {
             return null;
         }
 

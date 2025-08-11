@@ -1,6 +1,8 @@
 package za.co.studenthub.domain;
+
 import jakarta.persistence.*;
 import lombok.*;
+import za.co.studenthub.domain.enums.ChannelPermissions;
 import za.co.studenthub.domain.enums.ChannelType;
 
 import java.util.Set;
@@ -20,14 +22,19 @@ public class Channel {
 
     @ManyToOne
     @JoinColumn(name = "admin_created_channel_user_id")
-    private Admin adminCreatedChannel;
+    private User adminCreatedChannel;
 
-    @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "channelId", cascade = CascadeType.ALL)
     private Set<UserPost> userPosts;
 
     @Enumerated(EnumType.STRING)
     private ChannelType channelType;
 
     private String channelName;
-}
 
+    @ElementCollection(targetClass = ChannelPermissions.class)
+    @Enumerated(EnumType.STRING)
+    @CollectionTable(name = "channel_permissions", joinColumns = @JoinColumn(name = "channel_id"))
+    @Column(name = "permission")
+    private Set<ChannelPermissions> permissions; // New: Store multiple permissions
+}

@@ -3,11 +3,12 @@ package za.co.studenthub.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import za.co.studenthub.domain.enums.UserPostType;
-import za.co.studenthub.domain.enums.UserRole;
+
 import java.time.LocalDate;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @ToString
 @NoArgsConstructor
@@ -18,22 +19,21 @@ public class UserPost {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userPostId;
 
-    @ManyToOne (fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_post")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "channel")
-    private Channel channel;
+    @JoinColumn(name = "channel_id")
+    private Channel channelId;
 
     @Enumerated(EnumType.STRING)
     private UserPostType userPostType;
 
-    @Enumerated(EnumType.STRING)
-    private UserRole role;
+    @Column(columnDefinition = "TEXT")
+    private String content;
 
     private LocalDate postTimestamp;
     private boolean isModeratedPost;
     private boolean isUserChannelModerator;
-
 }

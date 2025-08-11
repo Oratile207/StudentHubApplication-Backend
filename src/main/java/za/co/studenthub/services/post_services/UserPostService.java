@@ -41,4 +41,14 @@ public class UserPostService implements IUserPostService {
     public List<UserPost> getAll() {
         return repository.findAll();
     }
+
+    // Add or update this method
+    public List<UserPost> findByUserId(Long userId) {
+        return repository.findByUserUserId(userId); // Updated to use findByUserUserId
+    }
+
+    // Add this method if the search endpoint is uncommented
+    public List<UserPost> findByContent(String content) {
+        return repository.findByContentContainingIgnoreCase(content);
+    }
 }

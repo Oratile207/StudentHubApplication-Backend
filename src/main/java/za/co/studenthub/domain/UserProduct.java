@@ -3,11 +3,13 @@ package za.co.studenthub.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import za.co.studenthub.domain.enums.ReturnType;
+
 import java.util.Set;
 
 @Entity
 @Table(name = "user_product")
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
@@ -15,11 +17,11 @@ import java.util.Set;
 public class UserProduct {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long userProductId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "entrepreneur_profile_id")
-    private EntrepreneurUserProfile entrepreneurProfile;
+    private EntrepreneurUserProfile entrepreneurUserProfile;
 
     @OneToMany(mappedBy = "userProduct", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Products> productsSet;
@@ -28,6 +30,4 @@ public class UserProduct {
     private ReturnType returnType;
 
     private String productName;
-
-
 }

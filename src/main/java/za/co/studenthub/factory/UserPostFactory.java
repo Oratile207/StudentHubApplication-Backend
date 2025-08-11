@@ -9,16 +9,24 @@ import za.co.studenthub.util.Helper;
 import java.time.LocalDate;
 
 public class UserPostFactory {
-    public static UserPost createUserPost(User user, Channel channel, UserPostType postType, String content) {
-        if (user == null || channel == null || postType == null || Helper.isNullOrEmpty(content)) {
+    public static UserPost createUserPost(User user,
+                                          Channel channel,
+                                          UserPostType postType,
+                                          String content) {
+
+        if (user == null ||
+                channel == null ||
+                postType == null ||
+                Helper.isNullOrEmpty(content)) {
             return null;
         }
 
         return UserPost.builder()
                 .userPostId(Helper.generateId())
                 .user(user)
-                .channel(channel)
+                .channelId(channel)
                 .userPostType(postType)
+                .content(content)
                 .postTimestamp(LocalDate.now())
                 .build();
     }

@@ -17,27 +17,37 @@ public class UserProfileController {
     }
 
     @PostMapping("/create")
-    public UserProfile create(@RequestBody UserProfile userProfile) {
+    public UserProfile create(@RequestBody UserProfile userProfile, @RequestHeader("Authorization") String token) {
         return userProfileService.create(userProfile);
     }
 
     @GetMapping("/read/{id}")
-    public UserProfile read(@PathVariable long id) {
+    public UserProfile read(@PathVariable long id, @RequestHeader("Authorization") String token) {
         return userProfileService.read(id);
     }
 
     @PutMapping("/update")
-    public UserProfile update(@RequestBody UserProfile userProfile) {
+    public UserProfile update(@RequestBody UserProfile userProfile, @RequestHeader("Authorization") String token) {
         return userProfileService.update(userProfile);
     }
 
     @DeleteMapping("/delete/{id}")
-    public void delete(@PathVariable long id) {
+    public void delete(@PathVariable long id, @RequestHeader("Authorization") String token) {
         userProfileService.delete(id);
     }
 
     @GetMapping("/getAll")
-    public List<UserProfile> getAll() {
+    public List<UserProfile> getAll(@RequestHeader("Authorization") String token) {
         return userProfileService.getAll();
+    }
+
+    @GetMapping("/search")
+    public List<UserProfile> searchByName(@RequestParam String firstName, @RequestParam String lastName, @RequestHeader("Authorization") String token) {
+        return userProfileService.findByNameContaining(firstName, lastName);
+    }
+
+    @GetMapping("/search/email")
+    public List<UserProfile> searchByEmail(@RequestParam String email, @RequestHeader("Authorization") String token) {
+        return userProfileService.findByEmailContaining(email);
     }
 }

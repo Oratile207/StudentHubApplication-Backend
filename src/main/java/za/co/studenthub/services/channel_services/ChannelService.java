@@ -9,7 +9,6 @@ import java.util.List;
 
 @Service
 public class ChannelService implements IChannelService {
-
     private final ChannelRepository repository;
 
     @Autowired
@@ -18,27 +17,20 @@ public class ChannelService implements IChannelService {
     }
 
     @Override
-    public Channel create(Channel channel) {
-        return repository.save(channel);
-    }
+    public Channel create(Channel channel) { return repository.save(channel); }
 
     @Override
-    public Channel read(Long id) {
-        return repository.findById(id).orElse(null);
-    }
+    public Channel read(Long id) { return repository.findById(id).orElse(null); }
 
     @Override
-    public Channel update(Channel channel) {
-        return repository.save(channel);
-    }
+    public Channel update(Channel channel) { return repository.save(channel); }
 
     @Override
-    public void delete(Long id) {
-        repository.deleteById(id);
-    }
+    public void delete(Long id) { repository.deleteById(id); }
 
     @Override
-    public List<Channel> getAll() {
-        return repository.findAll();
+    public List<Channel> getAll() { return repository.findAll(); }
+
+    public List<Channel> findByName(String name) { return repository.findByChannelNameContainingIgnoreCase(name);
     }
 }

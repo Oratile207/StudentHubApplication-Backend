@@ -1,34 +1,39 @@
 package za.co.studenthub.domain;
+
 import jakarta.persistence.*;
 import lombok.*;
-import za.co.studenthub.domain.enums.UserProfileType;
+import za.co.studenthub.domain.enums.UserRole;
 
 import java.util.Set;
 
 @Entity
 @Getter
+@Setter
 @Builder
-@ToString(exclude = {"userProducts"}) // Exclude collections from toString to prevent infinite loops
+@ToString(exclude = {"userProducts"})
 @Table(name = "entrepreneur_profile")
 @NoArgsConstructor
 @AllArgsConstructor
 public class EntrepreneurUserProfile {
     @Id
-    private Long id;
-
-    private boolean isCommercePotrfolioEnabled;
-    private String sessionUrl;
-
-    private String biography;
-    @Enumerated(EnumType.STRING)
-    private UserProfileType userProfileType;
+    @Column(name = "user_id")
+    private Long entrepreneurUserId;
 
     @OneToOne
     @MapsId
     @JoinColumn(name = "user_id")
-    private User userId;
+    private User user;
 
-    @OneToMany(mappedBy = "entrepreneurProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Column(name = "is_commerce_portfolio_enabled")
+    private boolean isCommercePortfolioEnabled;
+
+    @Column(name = "session_url")
+    private String sessionUrl;
+
+    @Column(name = "biography")
+    private String biography;
+
+    @OneToMany(mappedBy = "entrepreneurUserProfile", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserProduct> userProducts;
 
 }

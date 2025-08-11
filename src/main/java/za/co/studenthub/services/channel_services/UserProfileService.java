@@ -14,7 +14,6 @@ public class UserProfileService implements IUserProfileService {
         this.userProfileRepository = userProfileRepository;
     }
 
-
     @Override
     public UserProfile create(UserProfile userProfile) {
         return userProfileRepository.save(userProfile);
@@ -38,5 +37,13 @@ public class UserProfileService implements IUserProfileService {
     @Override
     public List<UserProfile> getAll() {
         return userProfileRepository.findAll();
+    }
+
+    public List<UserProfile> findByNameContaining(String firstName, String lastName) {
+        return userProfileRepository.findByUserUserFirstNameContainingIgnoreCaseOrUserUserLastNameContainingIgnoreCase(firstName, lastName);
+    }
+
+    public List<UserProfile> findByEmailContaining(String email) {
+        return userProfileRepository.findByUserUserEmailContainingIgnoreCase(email);
     }
 }
