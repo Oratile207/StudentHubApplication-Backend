@@ -30,7 +30,7 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody User user) {
         try {
-            if (userService.findByUserEmail(user.getUserEmail()) != null) { // Updated to findByUserEmail
+            if (userService.findByUserEmail(user.getUserEmail()) != null) {
                 return ResponseEntity.badRequest().body("Email already exists");
             }
             UserRole role = user.getUserRole() != null ? user.getUserRole() : UserRole.STUDENT;
@@ -57,7 +57,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody User user) {
         try {
-            User existingUser = userService.findByUserEmail(user.getUserEmail()); // Updated to findByUserEmail
+            User existingUser = userService.findByUserEmail(user.getUserEmail());
             if (existingUser != null && passwordEncoder.matches(user.getUserPassword(), existingUser.getUserPassword())) {
                 String token = jwtUtil.generateToken(existingUser.getUserEmail());
                 return ResponseEntity.ok(token);

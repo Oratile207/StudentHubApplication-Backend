@@ -5,6 +5,7 @@ import lombok.*;
 
 @Entity
 @Getter
+@Setter
 @Builder
 @ToString
 @NoArgsConstructor
@@ -12,7 +13,7 @@ import lombok.*;
 @Table(name = "user_profile")
 public class UserProfile {
     @Id
-    private Long profileId;
+    private Long userProfileId;
 
     @OneToOne
     @MapsId

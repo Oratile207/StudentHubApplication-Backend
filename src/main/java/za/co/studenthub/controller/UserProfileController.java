@@ -26,8 +26,9 @@ public class UserProfileController {
         return userProfileService.read(id);
     }
 
-    @PutMapping("/update")
-    public UserProfile update(@RequestBody UserProfile userProfile, @RequestHeader("Authorization") String token) {
+    @PutMapping("/update/{id}")
+    public UserProfile update(@PathVariable Long id, @RequestBody UserProfile userProfile, @RequestHeader("Authorization") String token) {
+        userProfile.setUserProfileId(id);
         return userProfileService.update(userProfile);
     }
 

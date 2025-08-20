@@ -42,6 +42,14 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private EntrepreneurUserProfile entrepreneurProfile;
 
+    @Builder.Default
+    @Column(name = "status", nullable = true)
+    private String status = "offline";
+
+    @Builder.Default
+    @Column(name = "is_online", nullable = false)
+    private boolean isOnline = false;
+
     // In za.co.studenthub.domain.User
     public boolean isAdmin() {
         return userRole != null && UserRole.ADMIN.equals(userRole);
@@ -121,5 +129,29 @@ public class User {
 
     public void setEntrepreneurProfile(EntrepreneurUserProfile entrepreneurProfile) {
         this.entrepreneurProfile = entrepreneurProfile;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public boolean isOnline() {
+        return isOnline;
+    }
+
+    public void setOnline(boolean online) {
+        isOnline = online;
+    }
+
+    public Long getId() {
+        return userId;
+    }
+
+    public boolean isPresent() {
+        return true;
     }
 }
