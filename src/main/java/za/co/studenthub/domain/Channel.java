@@ -37,4 +37,35 @@ public class Channel {
     @CollectionTable(name = "channel_permissions", joinColumns = @JoinColumn(name = "channel_id"))
     @Column(name = "permission")
     private Set<ChannelPermissions> permissions; // New: Store multiple permissions
+    
+    @Column(name = "description")
+    private String description;
+    
+    @Column(name = "created_at")
+    private java.time.LocalDateTime createdAt;
+    
+    @PrePersist
+    protected void onCreate() {
+        createdAt = java.time.LocalDateTime.now();
+    }
+    
+    // Frontend compatibility method
+    public boolean getIsPrivate() {
+        return channelType == ChannelType.PRIVATE_GROUP;
+    }
+    
+    public void setIsPrivate(boolean isPrivate) {
+        this.channelType = isPrivate ? ChannelType.PRIVATE_GROUP : ChannelType.PUBLIC_FORUM;
+    }
+    
+    // For JSON serialization
+    @Transient
+    public Long getId() {
+        return channelId;
+    }
+    
+    @Transient 
+    public String getName() {
+        return channelName;
+    }
 }

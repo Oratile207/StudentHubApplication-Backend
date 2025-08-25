@@ -6,15 +6,26 @@ import za.co.studenthub.domain.enums.UserRole;
 import za.co.studenthub.util.Helper;
 
 public class UserFactory {
-    public static User createUser(UserRole role, String firstName, String lastName, String email, String password,
-                                  String studentNumber, String staffNumber, String biography,
-                                  boolean isCommercePortfolioEnabled, String sessionUrl) {
-        if (role == null || Helper.isNullOrEmpty(firstName) || Helper.isNullOrEmpty(lastName) ||
-                Helper.isNullOrEmpty(email) || Helper.isNullOrEmpty(password)) {
+    public static User createUser(UserRole role,
+                                  String firstName,
+                                  String lastName,
+                                  String email,
+                                  String password,
+                                  String studentNumber,
+                                  String staffNumber,
+                                  String biography,
+                                  boolean isCommercePortfolioEnabled,
+                                  String sessionUrl) {
+
+        if (role == null ||
+                Helper.isNullOrEmpty(firstName) ||
+                Helper.isNullOrEmpty(lastName) ||
+                Helper.isNullOrEmpty(email) ||
+                Helper.isNullOrEmpty(password)) {
             throw new IllegalArgumentException("Role, firstName, lastName, email, and password are required");
         }
 
-        User.UserBuilder builder = User.builder()
+        User.UserBuilder user = User.builder()
                 .userFirstName(firstName)
                 .userLastName(lastName)
                 .userEmail(email)
@@ -23,11 +34,11 @@ public class UserFactory {
 
         switch (role) {
             case STUDENT:
-                builder.studentNumber(studentNumber);
+                user.studentNumber(studentNumber);
                 break;
             case ADMIN:
             case IT_SUPPORT_STAFF:
-                builder.staffNumber(staffNumber);
+                user.staffNumber(staffNumber);
                 break;
             case FACULTY_MEMBER:
             case GUEST:
@@ -38,10 +49,10 @@ public class UserFactory {
                         .sessionUrl(sessionUrl)
                         .biography(biography)
                         .build();
-                builder.entrepreneurProfile(entrepreneurProfile);
+                user.entrepreneurProfile(entrepreneurProfile);
                 break;
         }
 
-        return builder.build();
+        return user.build();
     }
 }

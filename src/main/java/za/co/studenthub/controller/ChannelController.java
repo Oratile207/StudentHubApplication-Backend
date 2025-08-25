@@ -6,6 +6,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import za.co.studenthub.domain.Channel;
 import za.co.studenthub.domain.User;
+import za.co.studenthub.dto.CreateChannelRequest;
 import za.co.studenthub.repository.UserRepository;
 import za.co.studenthub.services.channel_services.ChannelService;
 import za.co.studenthub.controller.WebSocketController;
@@ -28,7 +29,12 @@ public class ChannelController {
     }
 
     @PostMapping("/create")
-    public Channel create(@RequestBody Channel channel) {
+    public Channel create(@RequestBody CreateChannelRequest request) {
+        Channel channel = Channel.builder()
+                .channelName(request.getChannelNameField())
+                .channelType(request.getChannelTypeField())
+                .description(request.getDescription())
+                .build();
         return channelService.create(channel);
     }
 

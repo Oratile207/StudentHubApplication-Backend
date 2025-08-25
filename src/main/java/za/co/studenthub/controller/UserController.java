@@ -6,11 +6,16 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import za.co.studenthub.domain.User;
 import za.co.studenthub.domain.enums.UserRole;
+import za.co.studenthub.dto.AuthResponse;
+import za.co.studenthub.dto.LoginRequest;
 import za.co.studenthub.factory.UserFactory;
 import za.co.studenthub.security.JwtUtil;
 import za.co.studenthub.services.user_services.user.UserService;
+import za.co.studenthub.util.UserResponseFormatter;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/auth")
@@ -28,10 +33,12 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody User user) {
+    public ResponseEntity<?> register(@RequestBody User user) {
         try {
             if (userService.findByUserEmail(user.getUserEmail()) != null) {
-                return ResponseEntity.badRequest().body("Email already exists");
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Email already exists");
+                return ResponseEntity.badRequest().body(errorResponse);
             }
             UserRole role = user.getUserRole() != null ? user.getUserRole() : UserRole.STUDENT;
             User newUser = UserFactory.createUser(
@@ -46,25 +53,52 @@ public class UserController {
                     user.getEntrepreneurProfile() != null && user.getEntrepreneurProfile().isCommercePortfolioEnabled(),
                     user.getEntrepreneurProfile() != null ? user.getEntrepreneurProfile().getSessionUrl() : null
             );
-            userService.create(newUser);
-            String token = jwtUtil.generateToken(newUser.getUserEmail());
-            return ResponseEntity.ok(token);
+            User savedUser = userService.create(newUser);
+            String token = jwtUtil.generateToken(savedUser.getUserEmail());
+            
+            // Return both token and user object
+            AuthResponse response = UserResponseFormatter.createAuthResponse(token, savedUser);
+            return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User user) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            User existingUser = userService.findByUserEmail(user.getUserEmail());
-            if (existingUser != null && passwordEncoder.matches(user.getUserPassword(), existingUser.getUserPassword())) {
-                String token = jwtUtil.generateToken(existingUser.getUserEmail());
-                return ResponseEntity.ok(token);
+            String email = loginRequest.getEmailField();
+            String password = loginRequest.getPasswordField();
+            
+            if (email == null || password == null) {
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Email and password are required");
+                return ResponseEntity.badRequest().body(errorResponse);
             }
-            return ResponseEntity.status(401).body("Invalid credentials");
+            
+            User existingUser = userService.findByUserEmail(email);
+            if (existingUser != null && passwordEncoder.matches(password, existingUser.getUserPassword())) {
+                // Update last seen when user logs in
+                existingUser.setLastSeen(java.time.LocalDateTime.now());
+                existingUser.setOnline(true);
+                userService.update(existingUser);
+                
+                String token = jwtUtil.generateToken(existingUser.getUserEmail());
+                
+                // Return both token and user object
+                AuthResponse response = UserResponseFormatter.createAuthResponse(token, existingUser);
+                return ResponseEntity.ok(response);
+            }
+            
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Invalid credentials");
+            return ResponseEntity.status(401).body(errorResponse);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Server error");
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Server error");
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
 

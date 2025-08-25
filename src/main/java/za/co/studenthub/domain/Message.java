@@ -32,11 +32,23 @@ public class Message {
 
     @Column(nullable = false)
     private LocalDateTime timestamp;
+    
+    @Column(name = "is_edited")
+    private boolean isEdited = false;
+    
+    @Column(name = "edited_at")
+    private LocalDateTime editedAt;
 
     @PrePersist
     public void prePersist() {
         if (timestamp == null) {
             timestamp = LocalDateTime.now();
         }
+    }
+    
+    @PreUpdate
+    public void preUpdate() {
+        isEdited = true;
+        editedAt = LocalDateTime.now();
     }
 }

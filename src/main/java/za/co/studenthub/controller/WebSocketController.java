@@ -47,6 +47,55 @@ public class WebSocketController {
         messagingTemplate.convertAndSend("/topic/channel/" + channelId, message);
     }
 
+    @MessageMapping("/user-left")
+    public void handleUserLeft(@Payload Map<String, Object> userData) {
+        Long channelId = Long.valueOf(userData.get("channelId").toString());
+        
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("userId", userData.get("userId"));
+        payload.put("userName", userData.get("userName"));
+        
+        WebSocketMessage message = new WebSocketMessage("user_left", payload);
+        messagingTemplate.convertAndSend("/topic/channel/" + channelId, message);
+    }
+
+    @MessageMapping("/ping")
+    public void handlePing(@Payload Map<String, Object> pingData) {
+        Long channelId = Long.valueOf(pingData.get("channelId").toString());
+        
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("timestamp", java.time.Instant.now().toString());
+        
+        WebSocketMessage message = new WebSocketMessage("ping", payload);
+        messagingTemplate.convertAndSend("/topic/channel/" + channelId, message);
+    }
+
+    @MessageMapping("/join-channel")
+    public void handleJoinChannel(@Payload Map<String, Object> joinData) {
+        Long channelId = Long.valueOf(joinData.get("channelId").toString());
+        
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("userId", joinData.get("userId"));
+        payload.put("userName", joinData.get("userName"));
+        payload.put("channelId", channelId);
+        
+        WebSocketMessage message = new WebSocketMessage("join_channel", payload);
+        messagingTemplate.convertAndSend("/topic/channel/" + channelId, message);
+    }
+
+    @MessageMapping("/leave-channel")
+    public void handleLeaveChannel(@Payload Map<String, Object> leaveData) {
+        Long channelId = Long.valueOf(leaveData.get("channelId").toString());
+        
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("userId", leaveData.get("userId"));
+        payload.put("userName", leaveData.get("userName"));
+        payload.put("channelId", channelId);
+        
+        WebSocketMessage message = new WebSocketMessage("leave_channel", payload);
+        messagingTemplate.convertAndSend("/topic/channel/" + channelId, message);
+    }
+
     public void sendOnlineUsersUpdate(Long channelId, Object users) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("channelId", channelId);

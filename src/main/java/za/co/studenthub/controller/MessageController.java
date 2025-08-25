@@ -16,6 +16,7 @@ import za.co.studenthub.repository.UserRepository;
 import za.co.studenthub.repository.ChannelRepository;
 import za.co.studenthub.dto.MessageRequest;
 import za.co.studenthub.dto.WebSocketMessage;
+import za.co.studenthub.util.MessageResponseFormatter;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -54,7 +55,7 @@ public class MessageController {
     }
 
     @PostMapping("/send")
-    public ResponseEntity<Message> sendMessage(@RequestBody MessageRequest request, Authentication authentication) {
+    public ResponseEntity<?> sendMessage(@RequestBody MessageRequest request, Authentication authentication) {
         try {
             String userEmail = authentication.getName();
             User author = userRepository.findByUserEmail(userEmail).orElse(null);
@@ -73,23 +74,14 @@ public class MessageController {
 
             Message savedMessage = messageRepository.save(message);
 
-            // Send WebSocket notification
-            Map<String, Object> payload = new HashMap<>();
-            payload.put("id", savedMessage.getId());
-            payload.put("content", savedMessage.getContent());
-            payload.put("channelId", savedMessage.getChannel().getChannelId());
-            payload.put("timestamp", savedMessage.getTimestamp().toString());
-            
-            Map<String, Object> authorInfo = new HashMap<>();
-            authorInfo.put("id", author.getId());
-            authorInfo.put("name", author.getUserFirstName() + " " + author.getUserLastName());
-            authorInfo.put("isOnline", true);
-            payload.put("author", authorInfo);
+            // Format message for frontend
+            Map<String, Object> formattedMessage = MessageResponseFormatter.formatMessageForFrontend(savedMessage);
 
-            WebSocketMessage wsMessage = new WebSocketMessage("message", payload);
+            // Send WebSocket notification with formatted message
+            WebSocketMessage wsMessage = new WebSocketMessage("message", formattedMessage);
             messagingTemplate.convertAndSend("/topic/channel/" + request.getChannelId(), wsMessage);
 
-            return ResponseEntity.ok(savedMessage);
+            return ResponseEntity.ok(formattedMessage);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
