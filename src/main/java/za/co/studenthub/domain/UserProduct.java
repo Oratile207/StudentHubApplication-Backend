@@ -13,7 +13,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@Builder
+@Builder(toBuilder = true)
 public class UserProduct {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

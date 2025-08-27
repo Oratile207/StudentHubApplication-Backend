@@ -7,7 +7,7 @@ import za.co.studenthub.domain.enums.ReturnType;
 @Entity
 @Getter
 @Setter
-@Builder
+@Builder(toBuilder = true)
 @ToString(exclude = {"userProduct"})
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,7 +21,10 @@ public class Products {
     @JoinColumn(name = "user_product_id", nullable = false)
     private UserProduct userProduct;
 
+    @Column(name = "product_name", nullable = false)
     private String productName;
+    
+    @Column(name = "product_description", columnDefinition = "TEXT")
     private String productDescription;
 
     @Enumerated(EnumType.STRING)

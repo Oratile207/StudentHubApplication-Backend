@@ -2,7 +2,6 @@ package za.co.studenthub.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import za.co.studenthub.domain.enums.UserRole;
 
 import java.util.Set;
 

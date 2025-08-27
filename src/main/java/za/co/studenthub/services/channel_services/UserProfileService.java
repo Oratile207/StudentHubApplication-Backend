@@ -39,11 +39,11 @@ public class UserProfileService implements IUserProfileService {
         return userProfileRepository.findAll();
     }
 
-    public List<UserProfile> findByNameContaining(String firstName, String lastName) {
-        return userProfileRepository.findByUserUserFirstNameContainingIgnoreCaseOrUserUserLastNameContainingIgnoreCase(firstName, lastName);
+    public List<UserProfile> searchByFirstNameOrLastName(String firstName, String lastName) {
+        return userProfileRepository.searchByFirstNameOrLastName(firstName, lastName);
     }
 
-    public List<UserProfile> findByEmailContaining(String email) {
-        return userProfileRepository.findByUserUserEmailContainingIgnoreCase(email);
+    public List<UserProfile> searchByEmail(String email) {
+        return userProfileRepository.searchByEmail(email);
     }
 }

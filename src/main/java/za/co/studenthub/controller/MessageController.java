@@ -19,7 +19,6 @@ import za.co.studenthub.dto.WebSocketMessage;
 import za.co.studenthub.util.MessageResponseFormatter;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController

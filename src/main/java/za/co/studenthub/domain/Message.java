@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class Message {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,16 +25,19 @@ public class Message {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id", nullable = false)
+    @JsonIgnoreProperties({"sentFriendRequests", "receivedFriendRequests", "userPassword"})
     private User author;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channel_id", nullable = false)
+    @JsonIgnoreProperties({"channelMembers", "memberships"})
     private Channel channel;
 
     @Column(nullable = false)
     private LocalDateTime timestamp;
     
     @Column(name = "is_edited")
+    @Builder.Default
     private boolean isEdited = false;
     
     @Column(name = "edited_at")

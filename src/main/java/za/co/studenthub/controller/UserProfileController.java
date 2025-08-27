@@ -44,11 +44,11 @@ public class UserProfileController {
 
     @GetMapping("/search")
     public List<UserProfile> searchByName(@RequestParam String firstName, @RequestParam String lastName, @RequestHeader("Authorization") String token) {
-        return userProfileService.findByNameContaining(firstName, lastName);
+        return userProfileService.searchByFirstNameOrLastName(firstName, lastName);
     }
 
     @GetMapping("/search/email")
     public List<UserProfile> searchByEmail(@RequestParam String email, @RequestHeader("Authorization") String token) {
-        return userProfileService.findByEmailContaining(email);
+        return userProfileService.searchByEmail(email);
     }
 }

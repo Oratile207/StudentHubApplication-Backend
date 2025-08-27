@@ -1,9 +1,4 @@
 package za.co.studenthub.util;
-
-import za.co.studenthub.domain.EntrepreneurUserProfile;
-import za.co.studenthub.domain.User;
-import za.co.studenthub.domain.enums.UserRole;
-
 import java.util.UUID;
 
 public class Helper {

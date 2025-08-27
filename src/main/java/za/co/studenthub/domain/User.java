@@ -2,11 +2,14 @@ package za.co.studenthub.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.SuperBuilder;
 import za.co.studenthub.domain.enums.UserRole;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@SuperBuilder
+@Builder(toBuilder = true)
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
@@ -60,6 +63,15 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private EntrepreneurUserProfile entrepreneurProfile;
 
+    // Friendship relationships - Ignored to prevent circular reference during JSON serialization
+    @JsonIgnore
+    @OneToMany(mappedBy = "fromUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Friendship> sentFriendRequests = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "toUser", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Friendship> receivedFriendRequests = new ArrayList<>();
+
     @Setter
     @Getter
     @Builder.Default
@@ -72,6 +84,7 @@ public class User {
 
     @Getter
     @Setter
+    @Builder.Default
     @Column(name = "avatar", nullable = true)
     private String avatar = "https://ui-avatars.com/api/?name=User&background=7289da&color=fff";
 
