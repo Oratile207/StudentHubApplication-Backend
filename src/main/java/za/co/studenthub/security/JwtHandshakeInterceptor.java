@@ -25,7 +25,9 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                    WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
         
-        logger.debug("WebSocket handshake attempt for URI: {}", request.getURI());
+        System.out.println("=== JWT HANDSHAKE INTERCEPTOR CALLED ===");
+        System.out.println("WebSocket handshake attempt for URI: " + request.getURI());
+        logger.info("WebSocket handshake attempt for URI: {}", request.getURI());
         
         // Extract token from query parameter
         URI uri = request.getURI();
@@ -34,16 +36,27 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
                 .getQueryParams()
                 .getFirst("token");
 
-        logger.debug("Extracted token: {}", token != null ? "present" : "null");
+        System.out.println("Extracted token: " + (token != null ? "present (" + token.substring(0, 20) + "...)" : "null"));
+        logger.info("Extracted token: {}", token != null ? "present" : "null");
 
-        if (token != null && jwtUtil.validateToken(token)) {
-            String username = jwtUtil.extractEmail(token);
-            attributes.put("username", username);
-            attributes.put("token", token);
-            logger.debug("WebSocket handshake successful for user: {}", username);
-            return true;
+        if (token != null) {
+            boolean isValid = jwtUtil.validateToken(token);
+            System.out.println("Token validation result: " + isValid);
+            
+            if (isValid) {
+                String username = jwtUtil.extractEmail(token);
+                attributes.put("username", username);
+                attributes.put("token", token);
+                System.out.println("WebSocket handshake successful for user: " + username);
+                logger.info("WebSocket handshake successful for user: {}", username);
+                return true;
+            } else {
+                System.out.println("Token validation failed");
+                logger.warn("Token validation failed");
+            }
         }
         
+        System.out.println("WebSocket handshake REJECTED - invalid or missing token");
         logger.warn("WebSocket handshake failed - invalid or missing token");
         return false;
     }

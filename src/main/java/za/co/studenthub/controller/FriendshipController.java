@@ -11,8 +11,10 @@ import za.co.studenthub.dto.FriendDto;
 import za.co.studenthub.dto.FriendRequestDto;
 import za.co.studenthub.dto.MessageResponse;
 import za.co.studenthub.dto.UserSearchDto;
+import za.co.studenthub.dto.WebSocketMessage;
 import za.co.studenthub.repository.FriendshipRepository;
 import za.co.studenthub.repository.UserRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -31,6 +33,9 @@ public class FriendshipController {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
     
     private User getCurrentUser(Authentication authentication) {
         String email = authentication.getName();
@@ -117,7 +122,10 @@ public class FriendshipController {
                 .status(FriendshipStatus.PENDING)
                 .build();
                 
-            friendshipRepository.save(friendship);
+            Friendship savedFriendship = friendshipRepository.save(friendship);
+            
+            // Send WebSocket notification to target user
+            sendFriendRequestNotification(savedFriendship);
             
             return ResponseEntity.ok(new MessageResponse("Friend request sent"));
             
@@ -428,5 +436,36 @@ public class FriendshipController {
             .status(user.getStatus() != null ? user.getStatus() : "OFFLINE")
             .userRole(user.getUserRole() != null ? user.getUserRole().toString() : "STUDENT")
             .build();
+    }
+    
+    // Send friend request notification via WebSocket
+    private void sendFriendRequestNotification(Friendship friendship) {
+        try {
+            User fromUser = friendship.getFromUser();
+            User toUser = friendship.getToUser();
+            
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("id", friendship.getId());
+            payload.put("fromUserId", fromUser.getUserId());
+            payload.put("fromUserName", fromUser.getUserFirstName() + " " + fromUser.getUserLastName());
+            payload.put("fromUserEmail", fromUser.getUserEmail());
+            payload.put("fromUserAvatar", fromUser.getAvatar());
+            payload.put("toUserId", toUser.getUserId());
+            payload.put("toUserName", toUser.getUserFirstName() + " " + toUser.getUserLastName());
+            payload.put("toUserEmail", toUser.getUserEmail());
+            payload.put("status", friendship.getStatus().toString());
+            payload.put("createdAt", friendship.getCreatedAt().toString());
+            
+            WebSocketMessage wsMessage = new WebSocketMessage("friend_request", payload);
+            
+            // Send notification to the target user's personal channel
+            messagingTemplate.convertAndSend("/topic/user/" + toUser.getUserId(), wsMessage);
+            
+            System.out.println("Friend request notification sent to user: " + toUser.getUserEmail());
+            
+        } catch (Exception e) {
+            System.err.println("Error sending friend request notification: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
