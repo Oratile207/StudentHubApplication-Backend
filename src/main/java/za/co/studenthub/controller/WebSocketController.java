@@ -10,10 +10,14 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import za.co.studenthub.domain.User;
+import za.co.studenthub.domain.Message;
+import za.co.studenthub.domain.Channel;
 import za.co.studenthub.dto.OnlineUserDto;
 import za.co.studenthub.dto.WebSocketMessage;
 import za.co.studenthub.repository.ChannelMembershipRepository;
 import za.co.studenthub.repository.UserRepository;
+import za.co.studenthub.repository.MessageRepository;
+import za.co.studenthub.repository.ChannelRepository;
 import za.co.studenthub.services.WebSocketSessionService;
 
 import java.time.LocalDateTime;
@@ -31,16 +35,22 @@ public class WebSocketController {
     private final UserRepository userRepository;
     private final ChannelMembershipRepository membershipRepository;
     private final WebSocketSessionService sessionService;
+    private final MessageRepository messageRepository;
+    private final ChannelRepository channelRepository;
 
     @Autowired
     public WebSocketController(SimpMessagingTemplate messagingTemplate, 
                              UserRepository userRepository,
                              ChannelMembershipRepository membershipRepository,
-                             WebSocketSessionService sessionService) {
+                             WebSocketSessionService sessionService,
+                             MessageRepository messageRepository,
+                             ChannelRepository channelRepository) {
         this.messagingTemplate = messagingTemplate;
         this.userRepository = userRepository;
         this.membershipRepository = membershipRepository;
         this.sessionService = sessionService;
+        this.messageRepository = messageRepository;
+        this.channelRepository = channelRepository;
     }
 
     @MessageMapping("/typing")
@@ -90,6 +100,73 @@ public class WebSocketController {
         
         WebSocketMessage message = new WebSocketMessage("ping", payload);
         messagingTemplate.convertAndSend("/topic/channel/" + channelId, message);
+    }
+
+    @MessageMapping("/send-message")
+    public void handleSendMessage(@Payload Map<String, Object> messageData, SimpMessageHeaderAccessor headerAccessor) {
+        try {
+            System.out.println("=== HANDLING SEND MESSAGE ===");
+            System.out.println("Message data: " + messageData);
+            
+            Long channelId = Long.valueOf(messageData.get("channelId").toString());
+            Long userId = Long.valueOf(messageData.get("userId").toString());
+            String content = messageData.get("content").toString();
+            
+            // Get user and channel from database
+            Optional<User> userOpt = userRepository.findById(userId);
+            Optional<Channel> channelOpt = channelRepository.findById(channelId);
+            
+            if (userOpt.isEmpty() || channelOpt.isEmpty()) {
+                logger.error("User or channel not found: userId={}, channelId={}", userId, channelId);
+                return;
+            }
+            
+            User user = userOpt.get();
+            Channel channel = channelOpt.get();
+            
+            // Create and save the message to database
+            Message newMessage = Message.builder()
+                .content(content)
+                .author(user)
+                .channel(channel)
+                .timestamp(LocalDateTime.now())
+                .build();
+            
+            Message savedMessage = messageRepository.save(newMessage);
+            System.out.println("Message saved to database with ID: " + savedMessage.getId());
+            
+            // Create payload for WebSocket broadcast
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("id", savedMessage.getId());
+            payload.put("content", savedMessage.getContent());
+            payload.put("channelId", channelId);
+            payload.put("timestamp", savedMessage.getTimestamp().toString());
+            
+            // Author details
+            Map<String, Object> authorDetails = new HashMap<>();
+            authorDetails.put("id", user.getUserId());
+            authorDetails.put("name", user.getUserFirstName() + " " + user.getUserLastName());
+            authorDetails.put("avatar", user.getAvatar());
+            authorDetails.put("isOnline", user.isOnline());
+            payload.put("author", authorDetails);
+            
+            payload.put("edited", savedMessage.isEdited());
+            if (savedMessage.getEditedAt() != null) {
+                payload.put("editedAt", savedMessage.getEditedAt().toString());
+            }
+            
+            // Broadcast message to all channel subscribers
+            WebSocketMessage wsMessage = new WebSocketMessage("message", payload);
+            messagingTemplate.convertAndSend("/topic/channel/" + channelId, wsMessage);
+            
+            System.out.println("Message broadcasted to channel: " + channelId);
+            logger.info("Message sent by user {} to channel {}: {}", user.getUserEmail(), channelId, content);
+            
+        } catch (Exception e) {
+            logger.error("Error handling send message: ", e);
+            e.printStackTrace();
+            sendErrorToUser(headerAccessor.getSessionId(), "Failed to send message");
+        }
     }
 
     @MessageMapping("/join-channel")

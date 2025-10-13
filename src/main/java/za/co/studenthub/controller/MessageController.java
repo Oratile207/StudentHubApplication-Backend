@@ -15,6 +15,7 @@ import za.co.studenthub.repository.MessageRepository;
 import za.co.studenthub.repository.UserRepository;
 import za.co.studenthub.repository.ChannelRepository;
 import za.co.studenthub.dto.MessageRequest;
+import za.co.studenthub.dto.MessageDto;
 import za.co.studenthub.dto.WebSocketMessage;
 import za.co.studenthub.util.MessageResponseFormatter;
 
@@ -43,14 +44,18 @@ public class MessageController {
     }
 
     @GetMapping("/{channelId}")
-    public ResponseEntity<Page<Message>> getMessages(
+    public ResponseEntity<Page<MessageDto>> getMessages(
             @PathVariable Long channelId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size) {
         
         Pageable pageable = PageRequest.of(page, size);
         Page<Message> messages = messageRepository.findByChannelChannelIdOrderByTimestampDesc(channelId, pageable);
-        return ResponseEntity.ok(messages);
+        
+        // Convert to DTOs to avoid Hibernate serialization issues
+        Page<MessageDto> messageDtos = messages.map(this::convertToDto);
+        
+        return ResponseEntity.ok(messageDtos);
     }
 
     @PostMapping("/send")
@@ -124,5 +129,32 @@ public class MessageController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
+    }
+    
+    private MessageDto convertToDto(Message message) {
+        User author = message.getAuthor();
+        String authorName = author.getUserFirstName() + " " + author.getUserLastName();
+        
+        MessageDto.AuthorDto authorDto = MessageDto.AuthorDto.builder()
+            .id(author.getUserId())
+            .name(authorName)
+            .email(author.getUserEmail())
+            .avatar(author.getAvatar())
+            .isOnline(author.isOnline())
+            .status(author.getStatus() != null ? author.getStatus() : "offline")
+            .userRole(author.getUserRole() != null ? author.getUserRole().toString() : "STUDENT")
+            .build();
+        
+        return MessageDto.builder()
+            .id(String.valueOf(message.getId()))
+            .content(message.getContent())
+            .timestamp(message.getTimestamp().toString())
+            .edited(message.isEdited())
+            .editedAt(message.getEditedAt() != null ? message.getEditedAt().toString() : null)
+            .author(authorDto)
+            .channelId(message.getChannel().getChannelId())
+            .userId(author.getUserId())     // For backward compatibility
+            .userName(authorName)           // For backward compatibility
+            .build();
     }
 }

@@ -29,6 +29,10 @@ public class SecurityConfig {
                     corsConfig.addAllowedOrigin("http://localhost:3001");
                     corsConfig.addAllowedOrigin("http://localhost:3002");
                     corsConfig.addAllowedOrigin("http://localhost:3003");
+                    corsConfig.addAllowedOrigin("http://127.0.0.1:5500");
+                    corsConfig.addAllowedOrigin("http://localhost:5500");
+                    corsConfig.addAllowedOriginPattern("http://localhost:*"); // Allow localhost with any port
+                    corsConfig.addAllowedOriginPattern("http://127.0.0.1:*"); // Allow 127.0.0.1 with any port
                     corsConfig.addAllowedMethod("*");
                     corsConfig.addAllowedHeader("*");
                     corsConfig.setAllowCredentials(true);
@@ -36,6 +40,7 @@ public class SecurityConfig {
                 }))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll() // Allow WebSocket endpoints
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                         .anyRequest().authenticated()
                 )

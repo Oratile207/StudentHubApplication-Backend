@@ -41,12 +41,25 @@ public class JwtUtil {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parser()
+            System.out.println("=== JWT VALIDATION ===");
+            System.out.println("Validating token: " + token.substring(0, 20) + "...");
+            System.out.println("JWT Secret: " + secret);
+            System.out.println("JWT Expiration: " + expiration);
+            
+            var claims = Jwts.parser()
                     .verifyWith(getSigningKey())
                     .build()
                     .parseSignedClaims(token);
+                    
+            System.out.println("Token validation SUCCESS");
+            System.out.println("Subject: " + claims.getPayload().getSubject());
+            System.out.println("Issued At: " + claims.getPayload().getIssuedAt());
+            System.out.println("Expires At: " + claims.getPayload().getExpiration());
+            
             return true;
         } catch (Exception e) {
+            System.out.println("Token validation FAILED: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
